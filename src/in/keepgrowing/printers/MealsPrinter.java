@@ -4,10 +4,10 @@ import in.keepgrowing.meal.Meal;
 
 import java.util.List;
 
-public class MealPrinter extends Printer<List<Meal>> {
+public class MealsPrinter extends Printer<List<Meal>> {
 
-    public MealPrinter() {
-        super(MealPrinter::printMealList);
+    public MealsPrinter() {
+        super(MealsPrinter::printMealList);
     }
 
     private static void printMealList(List<Meal> list) {
