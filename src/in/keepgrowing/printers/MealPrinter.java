@@ -11,6 +11,6 @@ public class MealPrinter extends Printer<List<Meal>> {
     }
 
     private static void printMealList(List<Meal> list) {
-        list.forEach(m -> System.out.println( m.getName() + " - " + m.getType()));
+        list.forEach(m -> System.out.println( m.getName() + " - " + m.getType() + ", " + m.getGlutenPresence()));
     }
 }

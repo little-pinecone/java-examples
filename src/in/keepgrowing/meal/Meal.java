@@ -4,31 +4,34 @@ import java.util.Objects;
 
 public class Meal {
 
-    public static final String TYPE_HEALTHY ="healthy";
-    public static final String TYPE_TASTY="tasty";
-
-    private String type;
     private String name;
+    private MealType type;
+    private GlutenPresence glutenPresence;
 
-    private Meal(String type, String name) {
+    private Meal(MealType type, String name, GlutenPresence glutenPresence) {
         this.type = type;
         this.name = name;
+        this.glutenPresence = glutenPresence;
     }
 
-    public static Meal healthy(String name) {
-        return new Meal(TYPE_HEALTHY, name);
+    public static Meal healthy(String name, GlutenPresence glutenPresence) {
+        return new Meal(MealType.HEALTHY, name, glutenPresence);
     }
 
-    public static Meal tasty(String name) {
-        return new Meal(TYPE_TASTY, name);
-    }
-
-    public String getType() {
-        return type;
+    public static Meal tasty(String name, GlutenPresence glutenPresence) {
+        return new Meal(MealType.TASTY, name, glutenPresence);
     }
 
     public String getName() {
         return name;
+    }
+
+    public MealType getType() {
+        return type;
+    }
+
+    public GlutenPresence getGlutenPresence() {
+        return glutenPresence;
     }
 
     public void setName(String name) {
@@ -40,20 +43,22 @@ public class Meal {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Meal meal = (Meal) o;
-        return Objects.equals(type, meal.type) &&
-                Objects.equals(name, meal.name);
+        return Objects.equals(name, meal.name) &&
+                type == meal.type &&
+                glutenPresence == meal.glutenPresence;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, name);
+        return Objects.hash(name, type, glutenPresence);
     }
 
     @Override
     public String toString() {
         return "Meal{" +
-                "type='" + type + '\'' +
-                ", name='" + name + '\'' +
+                "name='" + name + '\'' +
+                ", type=" + type +
+                ", glutenPresence=" + glutenPresence +
                 '}';
     }
 }

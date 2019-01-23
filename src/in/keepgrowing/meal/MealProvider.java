@@ -7,11 +7,18 @@ public class MealProvider {
 
     public static List<Meal> provide() {
         return Arrays.asList(
-                Meal.healthy("oatmeal"), Meal.healthy("scrambled eggs"),
-                Meal.healthy("bruschetta"), Meal.healthy("shake"), Meal.healthy("rice pudding"),
-                Meal.tasty("ice cream"), Meal.tasty("cinnamon bun"),
-                Meal.tasty("chocolate cookie"), Meal.tasty("almond cookie"),
-                Meal.tasty("CINNAMON BUN"), null, null
+                Meal.healthy("oatmeal", GlutenPresence.CONTAINS_GLUTEN),
+                Meal.healthy("scrambled eggs", GlutenPresence.GLUTEN_FREE),
+                Meal.healthy("bruschetta", GlutenPresence.CONTAINS_GLUTEN),
+                Meal.healthy("shake", GlutenPresence.GLUTEN_FREE),
+                Meal.healthy("rice pudding", GlutenPresence.GLUTEN_FREE),
+                Meal.tasty("ice cream", GlutenPresence.GLUTEN_FREE),
+                Meal.tasty("cinnamon bun", GlutenPresence.CONTAINS_GLUTEN),
+                Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN),
+                Meal.tasty("almond cookie", GlutenPresence.CONTAINS_GLUTEN),
+                Meal.tasty("CINNAMON BUN", GlutenPresence.CONTAINS_GLUTEN),
+                null,
+                null
         );
     }
 }

@@ -1,7 +1,9 @@
 package in.keepgrowing;
 
+import in.keepgrowing.meal.GlutenPresence;
 import in.keepgrowing.meal.Meal;
 import in.keepgrowing.meal.MealProvider;
+import in.keepgrowing.meal.MealType;
 import in.keepgrowing.printers.MealGroupPrinter;
 import in.keepgrowing.printers.MealPrinter;
 import in.keepgrowing.printers.Printer;
@@ -30,10 +32,12 @@ public class StreamExample {
 
         Printer<Long> numberPrinter = new Printer<>(System.out::println);
 
-        numberPrinter.print("tasty", countByType(uniqueMeals, Meal.TYPE_TASTY));
-        numberPrinter.print("healthy", countByType(uniqueMeals, Meal.TYPE_HEALTHY));
+        numberPrinter.print("tasty", countByType(uniqueMeals, MealType.TASTY));
+        numberPrinter.print("healthy", countByType(uniqueMeals, MealType.HEALTHY));
 
-        List<Meal> junkFood = Arrays.asList(Meal.tasty("french fries"), Meal.tasty("chicken wings"));
+        List<Meal> junkFood = Arrays.asList(
+                Meal.tasty("french fries", GlutenPresence.GLUTEN_FREE),
+                Meal.tasty("chicken wings", GlutenPresence.CONTAINS_GLUTEN));
         List<Meal> upgradedMeals = upgradeMeals(uniqueMeals, junkFood);
         mealPrinter.print("upgradeMeals", upgradedMeals);
 
@@ -45,9 +49,9 @@ public class StreamExample {
         List<String> healthyMealsNames = getHealthyMealsNames(sortedMeals);
         mealNamesPrinter.print("healthyMealsNames", healthyMealsNames);
 
-        Map<String, List<Meal>> mealsPerCategory = groupByCategory(sortedMeals);
+        Map<MealType, List<Meal>> mealsPerCategory = groupByCategory(sortedMeals);
 
-        Printer<Map<String, List<Meal>>> mealGroupPrinter = new MealGroupPrinter();
+        Printer<Map<MealType, List<Meal>>> mealGroupPrinter = new MealGroupPrinter();
         mealGroupPrinter.print("mealsPerCategory", mealsPerCategory);
     }
 
@@ -80,9 +84,9 @@ public class StreamExample {
 
     }
 
-    private static Long countByType(List<Meal> meals, String type) {
+    private static Long countByType(List<Meal> meals, MealType type) {
         return meals.stream()
-                .filter(meal -> meal.getType().equals(type))
+                .filter(meal -> meal.getType() == type)
                 .count();
     }
 
@@ -91,21 +95,21 @@ public class StreamExample {
                 .collect(Collectors.toList());
     }
 
-    private static List<Meal> sortMeals(List<Meal> upgradedMeals) {
-        return upgradedMeals.stream()
+    private static List<Meal> sortMeals(List<Meal> meals) {
+        return meals.stream()
                 .sorted(Comparator.comparing(Meal::getName))
                 .collect(Collectors.toList());
     }
 
-    private static List<String> getHealthyMealsNames(List<Meal> sortedMeals) {
-        return sortedMeals.stream()
-                .filter(meal -> meal.getType().equals(Meal.TYPE_HEALTHY))
+    private static List<String> getHealthyMealsNames(List<Meal> meals) {
+        return meals.stream()
+                .filter(meal -> meal.getType() == MealType.HEALTHY)
                 .map(Meal::getName)
                 .collect(Collectors.toList());
     }
 
-    private static Map<String, List<Meal>> groupByCategory(List<Meal> sortedMeals) {
-        return sortedMeals.stream()
+    private static Map<MealType, List<Meal>> groupByCategory(List<Meal> meals) {
+        return meals.stream()
                 .collect(Collectors.groupingBy(Meal::getType));
     }
 }
