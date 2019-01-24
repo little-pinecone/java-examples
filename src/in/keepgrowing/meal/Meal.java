@@ -7,19 +7,21 @@ public class Meal {
     private String name;
     private MealType type;
     private GlutenPresence glutenPresence;
+    private Integer kilocalories;
 
-    private Meal(MealType type, String name, GlutenPresence glutenPresence) {
+    private Meal(MealType type, String name, GlutenPresence glutenPresence, Integer kilocalorie) {
         this.type = type;
         this.name = name;
         this.glutenPresence = glutenPresence;
+        this.kilocalories = kilocalorie;
     }
 
-    public static Meal healthy(String name, GlutenPresence glutenPresence) {
-        return new Meal(MealType.HEALTHY, name, glutenPresence);
+    public static Meal healthy(String name, GlutenPresence glutenPresence, Integer kilocalorie) {
+        return new Meal(MealType.HEALTHY, name, glutenPresence, kilocalorie);
     }
 
-    public static Meal tasty(String name, GlutenPresence glutenPresence) {
-        return new Meal(MealType.TASTY, name, glutenPresence);
+    public static Meal tasty(String name, GlutenPresence glutenPresence, Integer kilocalorie) {
+        return new Meal(MealType.TASTY, name, glutenPresence, kilocalorie);
     }
 
     public String getName() {
@@ -34,6 +36,10 @@ public class Meal {
         return glutenPresence;
     }
 
+    public Integer getKilocalories() {
+        return kilocalories;
+    }
+
     public void setName(String name) {
         this.name = name;
     }
@@ -45,12 +51,13 @@ public class Meal {
         Meal meal = (Meal) o;
         return Objects.equals(name, meal.name) &&
                 type == meal.type &&
-                glutenPresence == meal.glutenPresence;
+                glutenPresence == meal.glutenPresence &&
+                Objects.equals(kilocalories, meal.kilocalories);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, type, glutenPresence);
+        return Objects.hash(name, type, glutenPresence, kilocalories);
     }
 
     @Override
@@ -59,6 +66,7 @@ public class Meal {
                 "name='" + name + '\'' +
                 ", type=" + type +
                 ", glutenPresence=" + glutenPresence +
+                ", kilocalories=" + kilocalories +
                 '}';
     }
 }

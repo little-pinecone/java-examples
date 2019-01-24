@@ -10,8 +10,10 @@ import in.keepgrowing.printers.MealsPrinter;
 import in.keepgrowing.printers.Printer;
 
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.function.BinaryOperator;
 import java.util.stream.Stream;
+
+import static java.util.stream.Collectors.*;
 
 public class StreamExample {
 
@@ -46,7 +48,7 @@ public class StreamExample {
         return meals.stream()
                 .filter(Objects::nonNull)
                 .filter(meal -> !meal.getName().equals(""))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private static List<Meal> unifyCharSize(List<Meal> meals) {
@@ -55,57 +57,117 @@ public class StreamExample {
                     m.setName(m.getName().toLowerCase());
                     return m;
                 })
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private static List<Meal> eraseDuplicates(List<Meal> meals) {
         return meals.stream()
                 .distinct()
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private static List<Meal> filterOutCookies(List<Meal> meals) {
         return meals.stream()
                 .filter(meal -> !meal.getName().contains("cookie"))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private static List<Meal> concatenate(List<Meal> meals) {
         List<Meal> junkFood = createJunkFood();
         return Stream.concat(meals.stream(), junkFood.stream())
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private static List<Meal> createJunkFood() {
         return Arrays.asList(
-                Meal.tasty("french fries", GlutenPresence.GLUTEN_FREE),
-                Meal.tasty("chicken wings", GlutenPresence.CONTAINS_GLUTEN));
+                Meal.tasty("french fries", GlutenPresence.GLUTEN_FREE, 500),
+                Meal.tasty("chicken wings", GlutenPresence.CONTAINS_GLUTEN, 600));
     }
 
     private static List<Meal> sort(List<Meal> meals) {
         return meals.stream()
                 .sorted(Comparator.comparing(Meal::getName))
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 
     private static void group(List<Meal> meals) {
+        byType(meals);
+        byGlutenPresenceAndType(meals);
+        Printer<String> stringPrinter = new Printer<>(System.out::println);
+        justNamesByType(meals, stringPrinter);
+        averageKilocalorieByType(meals, stringPrinter);
+        summaryStatisticsForKilocalorieByType(meals, stringPrinter);
+        mostCaloricMealByType(meals, stringPrinter);
+    }
+
+    private static void byType(List<Meal> meals) {
+        Map<MealType, List<Meal>> mealsByType = meals.stream()
+                .collect(groupingBy(Meal::getType));
+
         Printer<Map<MealType, List<Meal>>> mealsByTypePrinter = new MealsByGroupPrinter<>();
-        mealsByTypePrinter.print("meals by type", groupByType(meals));
+        mealsByTypePrinter.print("meals by type", mealsByType);
+    }
+
+    private static void byGlutenPresenceAndType(List<Meal> meals) {
+        Map<GlutenPresence, Map<MealType, List<Meal>>> mealsByGlutenPresenceAndType = meals.stream()
+                .collect(groupingBy(
+                        Meal::getGlutenPresence,
+                        groupingBy(Meal::getType)));
 
         Printer<Map<GlutenPresence, Map<MealType, List<Meal>>>> mealsByGlutenPresenceAndTypePrinter =
                 new MealsByTwoGroupsPrinter<>();
         mealsByGlutenPresenceAndTypePrinter.print("meals by gluten presence and type",
-                groupByGlutenPresenceAndType(meals));
+                mealsByGlutenPresenceAndType);
     }
 
-    private static Map<MealType, List<Meal>> groupByType(List<Meal> meals) {
-        return meals.stream()
-                .collect(Collectors.groupingBy(Meal::getType));
+    private static void justNamesByType(List<Meal> meals, Printer<String> printer) {
+        Map<MealType, String> mealsNamesByType = meals.stream()
+                .collect(groupingBy(
+                        Meal::getType,
+                        mapping(Meal::getName, joining(", ", "Names: ", "."))));
+
+        mealsNamesByType.forEach((mealType, names) -> printer.print(mealType.toString(), names));
     }
 
-    private static Map<GlutenPresence, Map<MealType, List<Meal>>> groupByGlutenPresenceAndType(List<Meal> sortedMeals) {
-        return sortedMeals.stream()
-                .collect(Collectors.groupingBy(Meal::getGlutenPresence, Collectors.groupingBy(Meal::getType)));
+    private static void averageKilocalorieByType(List<Meal> meals, Printer<String> printer) {
+        Map<MealType, Double> averageKilocalorieByType = meals.stream()
+                .collect(groupingBy(
+                        Meal::getType,
+                        averagingInt(Meal::getKilocalories)
+                ));
+
+        averageKilocalorieByType.forEach(
+                (mealType, kilocalorie) -> {
+                    String title = mealType.toString() + " average kilocalorie";
+                    printer.print(title, kilocalorie.toString());
+                });
+    }
+
+    private static void summaryStatisticsForKilocalorieByType(List<Meal> meals, Printer<String> printer) {
+        Map<MealType, IntSummaryStatistics> statistics = meals.stream()
+                .collect(groupingBy(
+                        Meal::getType,
+                        summarizingInt(Meal::getKilocalories)));
+
+        statistics.forEach(
+                (mealType, values) -> {
+                    String title = mealType.toString() + " kilocalorie statistics";
+                    printer.print(title, values.toString());
+                });
+    }
+
+    private static void mostCaloricMealByType(List<Meal> meals, Printer<String> printer) {
+        Map<MealType, Meal> mostCaloricMeals = meals.stream()
+                .collect(toMap(Meal::getType, m -> m, mostCaloric()));
+
+        mostCaloricMeals.forEach(((mealType, meal) -> {
+            String title = mealType.toString() + " most caloric meal";
+            printer.print(title, meal.toString());
+        }));
+    }
+
+    private static BinaryOperator<Meal> mostCaloric() {
+        return BinaryOperator.maxBy(Comparator.comparing(Meal::getKilocalories));
     }
 
     private static void count(List<Meal> meals) {
@@ -129,6 +191,6 @@ public class StreamExample {
         return meals.stream()
                 .filter(meal -> meal.getType() == MealType.HEALTHY)
                 .map(Meal::getName)
-                .collect(Collectors.toList());
+                .collect(toList());
     }
 }
