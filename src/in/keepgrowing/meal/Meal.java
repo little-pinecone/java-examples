@@ -44,6 +44,10 @@ public class Meal {
         this.name = name;
     }
 
+    public boolean isLowCalorie() {
+        return this.kilocalories <= 200;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
