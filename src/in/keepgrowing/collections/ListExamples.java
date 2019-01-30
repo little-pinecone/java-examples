@@ -13,6 +13,7 @@ public class ListExamples {
     public static void main(String[] args) {
         howToCreate();
         howToModify();
+        howToFetchElement();
     }
 
     private static void howToCreate() {
@@ -33,6 +34,7 @@ public class ListExamples {
         Printer<List<Meal>> mealsPrinter = new MealsPrinter();
         addItemsOneByOne(mealsPrinter);
         appendNewItemsWhileIterating(mealsPrinter);
+        removeItem(mealsPrinter);
     }
 
     private static void addItemsOneByOne(Printer<List<Meal>> printer) {
@@ -44,16 +46,27 @@ public class ListExamples {
     }
 
     private static void appendNewItemsWhileIterating(Printer<List<Meal>> printer) {
-        ArrayList<Meal> meals = new ArrayList<>(MealProvider.provideBalanced());
-        for (Meal meal: new ArrayList<>(meals))
+        List<Meal> meals = new LinkedList<>(MealProvider.provideBalanced());
+        for (Meal meal: new LinkedList<>(meals))
         {
             meals.add(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400));
         }
-        printer.print("cookies added while iterating over the list", meals);
+        printer.print("chocolate cookies added while iterating over the LinkedList", meals);
+
     }
 
-    private static void howToFetchelement() {
+    private static void removeItem(Printer<List<Meal>> printer) {
+        Meal cookie = Meal.tasty("almond cookie", GlutenPresence.CONTAINS_GLUTEN, 350);
+        List<Meal> linkedList = new LinkedList<>(MealProvider.provideBalanced());
+        linkedList.remove(cookie);
+        printer.print("almond cookie from the LinkedList", linkedList);
+    }
 
+    private static void howToFetchElement() {
+        Printer<List<Meal>> mealsPrinter = new MealsPrinter();
+        List<Meal> meals = new ArrayList<>(MealProvider.provide());
+        mealsPrinter.print("meal fetched by (9) index from an ArrayList with null values",
+                Collections.singletonList(meals.get(9)));
     }
 
     private static void howToIterate() {
