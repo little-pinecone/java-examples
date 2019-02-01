@@ -158,41 +158,71 @@ public class ListExamples {
         Optional.ofNullable(meals.get(10)).ifPresent(System.out::println);
         System.out.println(Optional.ofNullable(meals.get(10))
                 .orElse(Meal.healthy("empty", GlutenPresence.GLUTEN_FREE, 0)));
-        System.out.print("\n");
+        System.out.println("\n-------------------------------------------------\n");
 
         System.out.println(meals.contains(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400)));
         System.out.println(meals.contains(null));
+        System.out.println("\n-------------------------------------------------\n");
 
         System.out.println(meals.indexOf(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400)));
         System.out.println(meals.indexOf(null));
         System.out.println(meals.lastIndexOf(null));
+        System.out.println("\n-------------------------------------------------\n");
     }
 
     private static void howToIterate() {
         List<Meal> meals = new ArrayList<>(MealProvider.provide());
         Printer<List<Meal>> printer = new MealsPrinter();
+        printer.print("before iteration", meals);
 
+        changeWhenIterationWithIterator(meals, printer);
+        changeNamesInFor(meals, printer);
+        modifyElementWithGivenIndexDuringIteration(meals, printer);
+        doNotCrashWhenListIsNull(meals);
+        changeNullMealsToOptionalInForeach(meals, printer);
+        filterOutNullsInStream(meals, printer);
+    }
+
+    private static void changeWhenIterationWithIterator(List<Meal> meals, Printer<List<Meal>> printer) {
         Iterator<Meal> iterator = meals.iterator();
         while (iterator.hasNext()) {
-            Optional.ofNullable(iterator.next()).ifPresent(m -> System.out.println(iterator.next()));
+            Optional.ofNullable(iterator.next()).ifPresent(m -> m.setName("changed during iteration with iterator"));
         }
+        printer.print("names changed during iteration with iterator", meals);
+    }
 
+    private static void changeNamesInFor(List<Meal> meals, Printer<List<Meal>> printer) {
         for (Meal meal : meals) {
-            Optional.ofNullable(meal).ifPresent(System.out::println);
+            Optional.ofNullable(meal).ifPresent(m -> m.setName("changed in for loop"));
         }
+        printer.print("names changed in for loop", meals);
+    }
 
+    private static void modifyElementWithGivenIndexDuringIteration(List<Meal> meals, Printer<List<Meal>> printer) {
         for (int i = 0; i < meals.size(); i++) {
-            System.out.println(meals.get(i));
-//            Optional.ofNullable(meals.get(i)).ifPresent(System.out::println);
+            Optional.ofNullable(meals.get(i)).
+                    ifPresent(meal -> {if(meal.getKilocalories()>200) {meal.setName("high calorie value");}});
         }
+        printer.print("names changed in high calorie meals", meals);
+    }
 
+    private static void doNotCrashWhenListIsNull(List<Meal> meals) {
+        System.out.println("[foreach save for nullable list]");
+        Optional.ofNullable(meals).ifPresent(m -> m.forEach((System.out::println)));
+        System.out.println("\n-------------------------------------------------\n");
+    }
+
+    private static void changeNullMealsToOptionalInForeach(List<Meal> meals, Printer<List<Meal>> printer) {
+        List<Meal> copy = new ArrayList<>();
+        meals.forEach(m -> copy.add(Optional.ofNullable(m)
+                .orElse(Meal.healthy("empty", GlutenPresence.GLUTEN_FREE, 0))));
+        printer.print("foreach changing nullable meals to empty optionals", copy);
+    }
+
+    private static void filterOutNullsInStream(List<Meal> meals, Printer<List<Meal>> printer) {
         List<Meal> mealsFromStream = meals.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         printer.print("meals from stream", mealsFromStream);
-
-        Optional.ofNullable(meals).ifPresent(m -> m.forEach((System.out::println)));
-        meals.forEach(m -> System.out.println(Optional.ofNullable(m)
-                .orElse(Meal.healthy("empty", GlutenPresence.GLUTEN_FREE, 0))));
     }
 }

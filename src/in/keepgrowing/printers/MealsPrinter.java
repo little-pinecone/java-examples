@@ -3,6 +3,7 @@ package in.keepgrowing.printers;
 import in.keepgrowing.meal.Meal;
 
 import java.util.List;
+import java.util.Optional;
 
 public class MealsPrinter extends Printer<List<Meal>> {
 
@@ -11,6 +12,7 @@ public class MealsPrinter extends Printer<List<Meal>> {
     }
 
     private static void printMealList(List<Meal> list) {
-        list.forEach(m -> System.out.println(m.getName()));
+        list.forEach(m -> Optional.ofNullable(m)
+                .ifPresent(meal -> System.out.println(m.getName())));
     }
 }
