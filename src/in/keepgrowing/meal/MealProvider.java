@@ -21,6 +21,7 @@ public class MealProvider {
                 null
         );
     }
+
     public static List<Meal> provideBalanced() {
         return Arrays.asList(
                 Meal.healthy("oatmeal", GlutenPresence.CONTAINS_GLUTEN, 200),
@@ -36,5 +37,12 @@ public class MealProvider {
                 Meal.healthy("salad", GlutenPresence.GLUTEN_FREE, 400),
                 Meal.tasty("almond cookie", GlutenPresence.CONTAINS_GLUTEN, 350)
                 );
+    }
+
+    public static List<Meal> provideTasty() {
+        return Arrays.asList(
+                Meal.tasty("ice cream", GlutenPresence.GLUTEN_FREE, 200),
+                Meal.tasty("cinnamon bun", GlutenPresence.CONTAINS_GLUTEN, 450)
+        );
     }
 }

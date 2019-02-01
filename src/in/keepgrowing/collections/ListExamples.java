@@ -7,6 +7,7 @@ import in.keepgrowing.printers.MealsPrinter;
 import in.keepgrowing.printers.Printer;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ListExamples {
 
@@ -14,6 +15,7 @@ public class ListExamples {
         howToCreate();
         howToModify();
         howToFetchElement();
+        howToIterate();
     }
 
     private static void howToCreate() {
@@ -37,9 +39,7 @@ public class ListExamples {
     }
 
     private static void elementsReferenceTheSameObjectFromOriginalList(Printer<List<Meal>> printer) {
-        List<Meal> meals = Arrays.asList(
-                Meal.healthy("oatmeal", GlutenPresence.CONTAINS_GLUTEN, 200),
-                Meal.tasty("ice cream", GlutenPresence.GLUTEN_FREE, 200));
+        List<Meal> meals = MealProvider.provideTasty();
         List<Meal> copiedMeals = new ArrayList<>(meals);
         printer.print("meals", meals);
         printer.print("copiedMeals", copiedMeals);
@@ -58,10 +58,12 @@ public class ListExamples {
     private static void useCollectionsUtil(Printer<List<Meal>> printer) {
         List<Meal> meals = new ArrayList<>();
 
-        Collections.addAll(meals, Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400));
+        Meal cookie = Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400);
+        Collections.addAll(meals, cookie);
         printer.print("Collections.addAll with individual element", meals);
 
-        Meal[] healthyMeals = new Meal[]{Meal.healthy("oatmeal", GlutenPresence.CONTAINS_GLUTEN, 200)};
+        Meal oatmeal = Meal.healthy("oatmeal", GlutenPresence.CONTAINS_GLUTEN, 200);
+        Meal[] healthyMeals = new Meal[]{oatmeal};
         Collections.addAll(meals, healthyMeals);
         printer.print("Collections.addAll with an array", meals);
     }
@@ -70,9 +72,12 @@ public class ListExamples {
         Printer<List<Meal>> mealsPrinter = new MealsPrinter();
         addItemsOneByOne(mealsPrinter);
         appendNewItemsWhileIterating(mealsPrinter);
+        addItemAtSpecificIndex(mealsPrinter);
         addFilteredInStream(mealsPrinter);
         removeItem(mealsPrinter);
-
+        createIntersectionOfTwoLists(mealsPrinter);
+        createSublist(mealsPrinter);
+        sort(mealsPrinter);
     }
 
     private static void addItemsOneByOne(Printer<List<Meal>> printer) {
@@ -89,6 +94,12 @@ public class ListExamples {
             meals.add(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400));
         }
         printer.print("chocolate cookies added while iterating over the LinkedList", meals);
+    }
+
+    private static void addItemAtSpecificIndex(Printer<List<Meal>> printer) {
+        List<Meal> meals = new LinkedList<>(MealProvider.provideBalanced());
+        meals.add(1, Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400));
+        printer.print("chocolate cookie added at the specific index", meals);
     }
 
     private static void addFilteredInStream(Printer<List<Meal>> printer) {
@@ -108,7 +119,33 @@ public class ListExamples {
         Meal cookie = Meal.tasty("almond cookie", GlutenPresence.CONTAINS_GLUTEN, 350);
         List<Meal> linkedList = new LinkedList<>(MealProvider.provideBalanced());
         linkedList.remove(cookie);
-        printer.print("almond cookie from the LinkedList", linkedList);
+        printer.print("almond cookie removed from the LinkedList", linkedList);
+        linkedList.remove(0);
+        printer.print("first element removed from the LinkedList", linkedList);
+        linkedList.clear();
+        printer.print("all elements removed from the LinkedList", linkedList);
+    }
+
+    private static void createIntersectionOfTwoLists(Printer<List<Meal>> printer) {
+        List<Meal> meals = new ArrayList<>(MealProvider.provideBalanced());
+        List<Meal> tasty = new ArrayList<>(MealProvider.provideTasty());
+        meals.retainAll(tasty);
+        printer.print("intersection meals", meals);
+        printer.print("intersection tasty", tasty);
+    }
+
+    private static void createSublist(Printer<List<Meal>> printer) {
+        List<Meal> meals = new ArrayList<>(MealProvider.provideBalanced());
+        List<Meal> sublist = meals.subList(0, 4);
+        printer.print("First 4 elements of a list", sublist);
+    }
+
+    private static void sort(Printer<List<Meal>> mealsPrinter) {
+        List<Meal> meals = new ArrayList<>(MealProvider.provideBalanced());
+        meals.sort(Comparator.comparing(Meal::getKilocalories));
+        mealsPrinter.print("meals sorted by their caloric value", meals);
+        meals.sort(Comparator.comparing(Meal::getName));
+        mealsPrinter.print("meals sorted by their name", meals);
     }
 
     private static void howToFetchElement() {
@@ -122,9 +159,40 @@ public class ListExamples {
         System.out.println(Optional.ofNullable(meals.get(10))
                 .orElse(Meal.healthy("empty", GlutenPresence.GLUTEN_FREE, 0)));
         System.out.print("\n");
+
+        System.out.println(meals.contains(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400)));
+        System.out.println(meals.contains(null));
+
+        System.out.println(meals.indexOf(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400)));
+        System.out.println(meals.indexOf(null));
+        System.out.println(meals.lastIndexOf(null));
     }
 
     private static void howToIterate() {
+        List<Meal> meals = new ArrayList<>(MealProvider.provide());
+        Printer<List<Meal>> printer = new MealsPrinter();
 
+        Iterator<Meal> iterator = meals.iterator();
+        while (iterator.hasNext()) {
+            Optional.ofNullable(iterator.next()).ifPresent(m -> System.out.println(iterator.next()));
+        }
+
+        for (Meal meal : meals) {
+            Optional.ofNullable(meal).ifPresent(System.out::println);
+        }
+
+        for (int i = 0; i < meals.size(); i++) {
+            System.out.println(meals.get(i));
+//            Optional.ofNullable(meals.get(i)).ifPresent(System.out::println);
+        }
+
+        List<Meal> mealsFromStream = meals.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        printer.print("meals from stream", mealsFromStream);
+
+        Optional.ofNullable(meals).ifPresent(m -> m.forEach((System.out::println)));
+        meals.forEach(m -> System.out.println(Optional.ofNullable(m)
+                .orElse(Meal.healthy("empty", GlutenPresence.GLUTEN_FREE, 0))));
     }
 }
