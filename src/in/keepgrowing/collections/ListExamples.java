@@ -40,14 +40,54 @@ public class ListExamples {
 
     private static void elementsReferenceTheSameObjectFromOriginalList(Printer<List<Meal>> printer) {
         List<Meal> meals = MealProvider.provideTasty();
-        List<Meal> copiedMeals = new ArrayList<>(meals);
+        List<Meal> referencedMeals = new ArrayList<>(meals);
 
-        meals.get(0).setName("modified in meals");
-        copiedMeals.add(MealProvider.provideCookie());
-        copiedMeals.get(1).setName("modified in copiedMeals");
+        meals.get(0).setName("name modified in meals");
+        referencedMeals.add(MealProvider.provideCookie());
+        referencedMeals.get(1).setName("name modified in referencedMeals");
 
         printer.print("meals", meals);
+        printer.print("referencedMeals", referencedMeals);
+
+        unmodifiableCopyOfList(printer);
+        unmodifiableListOfElements(printer);
+        unmodifiableArrayAsList();
+    }
+
+    private static void unmodifiableCopyOfList(Printer<List<Meal>> printer) {
+        List<Meal> newMeals = MealProvider.provideTasty();
+        List<Meal> copiedMeals = List.copyOf(newMeals);
+        copiedMeals.get(1).setName("name modified in copiedMeals");
+        try {
+            copiedMeals.add(MealProvider.provideCookie());
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Adding elements to an unmodifiable list is not allowed.");
+            System.out.println("\n-------------------------------------------------\n");
+        }
+        printer.print("meals", newMeals);
         printer.print("copiedMeals", copiedMeals);
+    }
+
+    private static void unmodifiableListOfElements(Printer<List<Meal>> printer) {
+        List<Meal> cookies = List.of(MealProvider.provideCookie(), MealProvider.provideCookie());
+        cookies.get(1).setName("name modified in cookies");
+        try {
+            cookies.add(MealProvider.provideCookie());
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Adding elements to an unmodifiable list is not allowed.");
+            System.out.println("\n-------------------------------------------------\n");
+        }
+        printer.print("cookies", cookies);
+    }
+
+    private static void unmodifiableArrayAsList() {
+        List<Meal> unmodifiableMeals = MealProvider.provide();
+        try {
+            unmodifiableMeals.add(MealProvider.provideCookie());
+        } catch (UnsupportedOperationException e) {
+            System.out.println("Adding elements to an unmodifiable list is not allowed.");
+            System.out.println("\n-------------------------------------------------\n");
+        }
     }
 
     private static void useCollectionsUtil(Printer<List<Meal>> printer) {
@@ -96,6 +136,13 @@ public class ListExamples {
         List<Meal> meals = new LinkedList<>(MealProvider.provideBalanced());
         meals.add(1, MealProvider.provideCookie());
         printer.print("chocolate cookie added at index (1)", meals);
+
+        try {
+            meals.add(200, MealProvider.provideCookie());
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Index out of bounds: " + e.getMessage());
+            System.out.println("\n-------------------------------------------------\n");
+        }
     }
 
     private static void addFilteredInStream(Printer<List<Meal>> printer) {
@@ -112,14 +159,19 @@ public class ListExamples {
     }
 
     private static void removeItem(Printer<List<Meal>> printer) {
-        Meal cookie = Meal.tasty("almond cookie", GlutenPresence.CONTAINS_GLUTEN, 350);
-        List<Meal> linkedList = new LinkedList<>(MealProvider.provideBalanced());
-        linkedList.remove(cookie);
-        printer.print("almond cookie removed from the LinkedList", linkedList);
-        linkedList.remove(0);
-        printer.print("first element removed from the LinkedList", linkedList);
-        linkedList.clear();
-        printer.print("all elements removed from the LinkedList", linkedList);
+        Meal cinnamonBun = Meal.tasty("cinnamon bun", GlutenPresence.CONTAINS_GLUTEN, 450);
+        List<Meal> meals = new LinkedList<>(MealProvider.provide());
+        meals.remove(cinnamonBun);
+        printer.print("first cinnamon bun removed", meals);
+        try {
+            meals.remove(1);
+            printer.print("first element removed", meals);
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("Index out of bounds: " + e.getMessage());
+            System.out.println("\n-------------------------------------------------\n");
+        }
+        meals.clear();
+        printer.print("all elements removed", meals);
     }
 
     private static void createIntersectionOfTwoLists(Printer<List<Meal>> printer) {
@@ -182,21 +234,33 @@ public class ListExamples {
     private static void howToIterate() {
         Printer<List<Meal>> printer = new MealsPrinter();
 
-        changeWhenIterationWithIterator(MealProvider.provide(), printer);
+        changeElementsWhenIteratingWithIterator(MealProvider.provide(), printer);
         changeNamesInFor(MealProvider.provide(), printer);
         modifyElementsWithSpecifiedIndexDuringIteration(MealProvider.provide(), printer);
         modifyElementsDuringIteration(MealProvider.provide(), printer);
         doNotCrashWhenListIsNull(null);
-        changeNullMealsToOptionalInForeach(MealProvider.provide(), printer);
+        changeNullsToEmptyMealsInForeach(MealProvider.provide(), printer);
         filterOutNullsInStream(MealProvider.provide(), printer);
     }
 
-    private static void changeWhenIterationWithIterator(List<Meal> meals, Printer<List<Meal>> printer) {
+    private static void changeElementsWhenIteratingWithIterator(List<Meal> meals, Printer<List<Meal>> printer) {
         Iterator<Meal> iterator = meals.iterator();
         while (iterator.hasNext()) {
-            Optional.ofNullable(iterator.next()).ifPresent(m -> m.setName("changed during iteration with iterator"));
+            Optional.ofNullable(iterator.next()).ifPresent(m -> m.setName("name changed during iterating with iterator"));
         }
-        printer.print("names changed during iteration with iterator", meals);
+        printer.print("names changed during iterating with iterator", meals);
+
+//        failToModifyListWhenIterating();
+    }
+
+    private static void failToModifyListWhenIterating() {
+        List<Meal> balanced = new ArrayList<>(MealProvider.provideBalanced());
+        Iterator<Meal> balancedIterator = balanced.iterator();
+        while (balancedIterator.hasNext()) {
+            if (balancedIterator.next().equals(Meal.tasty("cinnamon bun", GlutenPresence.CONTAINS_GLUTEN, 450))) {
+                balanced.add(MealProvider.provideEmptyHealthy());
+            }
+        }
     }
 
     private static void changeNamesInFor(List<Meal> meals, Printer<List<Meal>> printer) {
@@ -208,8 +272,8 @@ public class ListExamples {
 
     private static void modifyElementsWithSpecifiedIndexDuringIteration(List<Meal> meals, Printer<List<Meal>> printer) {
         for (int i = 0; i < meals.size(); i++) {
-            if(i%2 != 0) {
-                if(meals.get(i) != null) {
+            if (i % 2 != 0) {
+                if (meals.get(i) != null) {
                     meals.get(i).setName("even meal");
                 }
             }
@@ -220,8 +284,10 @@ public class ListExamples {
     private static void modifyElementsDuringIteration(List<Meal> meals, Printer<List<Meal>> printer) {
         for (int i = 0; i < meals.size(); i++) {
             Optional.ofNullable(meals.get(i)).
-                    ifPresent(meal -> { if(meal.getKilocalories()>200) {
-                        meal.setName("high calorie value");}
+                    ifPresent(meal -> {
+                        if (meal.getKilocalories() > 200) {
+                            meal.setName("high calorie value");
+                        }
                     });
         }
         printer.print("names changed in high calorie meals", meals);
@@ -233,7 +299,7 @@ public class ListExamples {
         System.out.println("\n-------------------------------------------------\n");
     }
 
-    private static void changeNullMealsToOptionalInForeach(List<Meal> meals, Printer<List<Meal>> printer) {
+    private static void changeNullsToEmptyMealsInForeach(List<Meal> meals, Printer<List<Meal>> printer) {
         List<Meal> copy = new ArrayList<>();
         meals.forEach(m -> copy.add(Optional.ofNullable(m)
                 .orElse(MealProvider.provideEmptyHealthy())));

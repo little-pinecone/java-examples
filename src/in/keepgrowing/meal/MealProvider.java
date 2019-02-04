@@ -16,7 +16,7 @@ public class MealProvider {
                 Meal.tasty("cinnamon bun", GlutenPresence.CONTAINS_GLUTEN, 450),
                 Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400),
                 Meal.tasty("almond cookie", GlutenPresence.CONTAINS_GLUTEN, 350),
-                Meal.tasty("CINNAMON BUN", GlutenPresence.CONTAINS_GLUTEN, 450),
+                Meal.tasty("cinnamon bun", GlutenPresence.CONTAINS_GLUTEN, 450),
                 null,
                 null
         );
