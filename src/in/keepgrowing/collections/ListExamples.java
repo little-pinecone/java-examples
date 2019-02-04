@@ -109,7 +109,8 @@ public class ListExamples {
         addItemsOneByOne(mealsPrinter);
         appendNewItemsWhileIterating(mealsPrinter);
         addItemAtSpecificIndex(mealsPrinter);
-        addFilteredInStream(mealsPrinter);
+        filterInStream(mealsPrinter);
+        filterInForEach(mealsPrinter);
         removeItem(mealsPrinter);
         createIntersectionOfTwoLists(mealsPrinter);
         createSublist(mealsPrinter);
@@ -145,17 +146,30 @@ public class ListExamples {
         }
     }
 
-    private static void addFilteredInStream(Printer<List<Meal>> printer) {
+    private static void filterInStream(Printer<List<Meal>> printer) {
         List<Meal> meals = new ArrayList<>(MealProvider.provideBalanced());
         List<Meal> lowCalorieMeals = new ArrayList<>();
+
         meals.stream()
                 .filter(Meal::isLowCalorie)
                 .forEachOrdered((lowCalorieMeals::add));
         printer.print("filtered low-calorie meals", lowCalorieMeals);
+
         List<Meal> lowCalorieMeals2 = meals.stream()
                 .filter(Meal::isLowCalorie)
                 .collect(Collectors.toList());
-        printer.print("filtered low-calorie meals 2", lowCalorieMeals2);
+        printer.print("filtered low-calorie meals", lowCalorieMeals2);
+    }
+
+    private static void filterInForEach(Printer<List<Meal>> printer) {
+        List<Meal> meals = MealProvider.provideBalanced();
+        List<Meal> copy = new ArrayList<>();
+        meals.forEach(m -> {
+            if (m.isLowCalorie()) {
+                copy.add(m);
+            }
+        });
+        printer.print("low-calorie meals filtered in forEach", copy);
     }
 
     private static void removeItem(Printer<List<Meal>> printer) {
@@ -205,14 +219,7 @@ public class ListExamples {
     }
 
     private static void getMealByIndex(Printer<List<Meal>> mealsPrinter, List<Meal> meals) {
-        mealsPrinter.print("[meal fetched by index from an ArrayList with null values - careless way]",
-                Collections.singletonList(meals.get(9)));
-
-        System.out.println("[meal fetched by index from an ArrayList with null values - cautious ways]");
-        Optional.ofNullable(meals.get(10)).ifPresent(System.out::println);
-        System.out.println(Optional.ofNullable(meals.get(10))
-                .orElse(MealProvider.provideEmptyHealthy()));
-        System.out.println("\n-------------------------------------------------\n");
+        mealsPrinter.print("[meal carelessly fetched by index]", Collections.singletonList(meals.get(9)));
     }
 
     private static void getIndexOfMeal(List<Meal> meals) {
@@ -234,23 +241,19 @@ public class ListExamples {
     private static void howToIterate() {
         Printer<List<Meal>> printer = new MealsPrinter();
 
-        changeElementsWhenIteratingWithIterator(MealProvider.provide(), printer);
+        changeElementsWhenIteratingWithIterator(MealProvider.provideBalanced(), printer);
         changeNamesInFor(MealProvider.provide(), printer);
         modifyElementsWithSpecifiedIndexDuringIteration(MealProvider.provide(), printer);
-        modifyElementsDuringIteration(MealProvider.provide(), printer);
-        doNotCrashWhenListIsNull(null);
-        changeNullsToEmptyMealsInForeach(MealProvider.provide(), printer);
+        modifyElementsDuringIteration(MealProvider.provideBalanced(), printer);
         filterOutNullsInStream(MealProvider.provide(), printer);
     }
 
     private static void changeElementsWhenIteratingWithIterator(List<Meal> meals, Printer<List<Meal>> printer) {
         Iterator<Meal> iterator = meals.iterator();
         while (iterator.hasNext()) {
-            Optional.ofNullable(iterator.next()).ifPresent(m -> m.setName("name changed during iterating with iterator"));
+            iterator.next().setName("name changed during iterating with iterator");
         }
         printer.print("names changed during iterating with iterator", meals);
-
-//        failToModifyListWhenIterating();
     }
 
     private static void failToModifyListWhenIterating() {
@@ -264,8 +267,9 @@ public class ListExamples {
     }
 
     private static void changeNamesInFor(List<Meal> meals, Printer<List<Meal>> printer) {
-        for (Meal meal : meals) {
-            Optional.ofNullable(meal).ifPresent(m -> m.setName("changed in for loop"));
+        List<Meal> balancedMeals = new ArrayList<>(MealProvider.provideBalanced());
+        for (Meal meal : balancedMeals) {
+            meal.setName("changed in for loop");
         }
         printer.print("names changed in for loop", meals);
     }
@@ -283,27 +287,11 @@ public class ListExamples {
 
     private static void modifyElementsDuringIteration(List<Meal> meals, Printer<List<Meal>> printer) {
         for (int i = 0; i < meals.size(); i++) {
-            Optional.ofNullable(meals.get(i)).
-                    ifPresent(meal -> {
-                        if (meal.getKilocalories() > 200) {
-                            meal.setName("high calorie value");
-                        }
-                    });
+            if (meals.get(i).getKilocalories() > 200) {
+                meals.get(i).setName("high calorie value");
+            }
         }
         printer.print("names changed in high calorie meals", meals);
-    }
-
-    private static void doNotCrashWhenListIsNull(List<Meal> meals) {
-        System.out.println("[foreach save for nullable list]");
-        Optional.ofNullable(meals).ifPresent(m -> m.forEach((System.out::println)));
-        System.out.println("\n-------------------------------------------------\n");
-    }
-
-    private static void changeNullsToEmptyMealsInForeach(List<Meal> meals, Printer<List<Meal>> printer) {
-        List<Meal> copy = new ArrayList<>();
-        meals.forEach(m -> copy.add(Optional.ofNullable(m)
-                .orElse(MealProvider.provideEmptyHealthy())));
-        printer.print("foreach changing nullable meals to empty meals", copy);
     }
 
     private static void filterOutNullsInStream(List<Meal> meals, Printer<List<Meal>> printer) {
