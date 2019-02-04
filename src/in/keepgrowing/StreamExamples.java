@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.*;
 
-public class StreamExample {
+public class StreamExamples {
 
     public static void main(String[] args) {
         List<Meal> meals = MealProvider.provide();
