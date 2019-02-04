@@ -41,26 +41,21 @@ public class ListExamples {
     private static void elementsReferenceTheSameObjectFromOriginalList(Printer<List<Meal>> printer) {
         List<Meal> meals = MealProvider.provideTasty();
         List<Meal> copiedMeals = new ArrayList<>(meals);
-        printer.print("meals", meals);
-        printer.print("copiedMeals", copiedMeals);
-        meals.get(0).setName("modified in meals");
-        copiedMeals.add(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400));
-        copiedMeals.get(1).setName("modified in copiedMeals");
-        printer.print("meals", meals);
-        printer.print("copiedMeals", copiedMeals);
 
-        List<Meal> nullableMeals = null;
-        List<Meal> validMeals = new ArrayList<>();
-        Optional.ofNullable(nullableMeals).ifPresent(validMeals::addAll);
-        printer.print("checked for nulls", validMeals);
+        meals.get(0).setName("modified in meals");
+        copiedMeals.add(MealProvider.provideCookie());
+        copiedMeals.get(1).setName("modified in copiedMeals");
+
+        printer.print("meals", meals);
+        printer.print("copiedMeals", copiedMeals);
     }
 
     private static void useCollectionsUtil(Printer<List<Meal>> printer) {
         List<Meal> meals = new ArrayList<>();
 
-        Meal cookie = Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400);
+        Meal cookie = MealProvider.provideCookie();
         Collections.addAll(meals, cookie);
-        printer.print("Collections.addAll with individual element", meals);
+        printer.print("Collections.addAll with one element", meals);
 
         Meal oatmeal = Meal.healthy("oatmeal", GlutenPresence.CONTAINS_GLUTEN, 200);
         Meal[] healthyMeals = new Meal[]{oatmeal};
@@ -70,6 +65,7 @@ public class ListExamples {
 
     private static void howToModify() {
         Printer<List<Meal>> mealsPrinter = new MealsPrinter();
+
         addItemsOneByOne(mealsPrinter);
         appendNewItemsWhileIterating(mealsPrinter);
         addItemAtSpecificIndex(mealsPrinter);
@@ -91,28 +87,28 @@ public class ListExamples {
     private static void appendNewItemsWhileIterating(Printer<List<Meal>> printer) {
         List<Meal> meals = new LinkedList<>(MealProvider.provideBalanced());
         for (Meal meal : new LinkedList<>(meals)) {
-            meals.add(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400));
+            meals.add(MealProvider.provideCookie());
         }
-        printer.print("chocolate cookies added while iterating over the LinkedList", meals);
+        printer.print("chocolate cookies added while iterating", meals);
     }
 
     private static void addItemAtSpecificIndex(Printer<List<Meal>> printer) {
         List<Meal> meals = new LinkedList<>(MealProvider.provideBalanced());
-        meals.add(1, Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400));
-        printer.print("chocolate cookie added at the specific index", meals);
+        meals.add(1, MealProvider.provideCookie());
+        printer.print("chocolate cookie added at index (1)", meals);
     }
 
     private static void addFilteredInStream(Printer<List<Meal>> printer) {
-        List<Meal> meals = Arrays.asList(
-                Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400),
-                Meal.tasty("ice cream", GlutenPresence.GLUTEN_FREE, 200),
-                Meal.tasty("cinnamon bun", GlutenPresence.CONTAINS_GLUTEN, 450));
-        printer.print("meals regardless of their calorific value", meals);
+        List<Meal> meals = new ArrayList<>(MealProvider.provideBalanced());
         List<Meal> lowCalorieMeals = new ArrayList<>();
         meals.stream()
                 .filter(Meal::isLowCalorie)
                 .forEachOrdered((lowCalorieMeals::add));
         printer.print("filtered low-calorie meals", lowCalorieMeals);
+        List<Meal> lowCalorieMeals2 = meals.stream()
+                .filter(Meal::isLowCalorie)
+                .collect(Collectors.toList());
+        printer.print("filtered low-calorie meals 2", lowCalorieMeals2);
     }
 
     private static void removeItem(Printer<List<Meal>> printer) {
@@ -130,8 +126,7 @@ public class ListExamples {
         List<Meal> meals = new ArrayList<>(MealProvider.provideBalanced());
         List<Meal> tasty = new ArrayList<>(MealProvider.provideTasty());
         meals.retainAll(tasty);
-        printer.print("intersection meals", meals);
-        printer.print("intersection tasty", tasty);
+        printer.print("intersection of meals and tasty meals", meals);
     }
 
     private static void createSublist(Printer<List<Meal>> printer) {
@@ -149,38 +144,51 @@ public class ListExamples {
     }
 
     private static void howToFetchElement() {
-        Printer<List<Meal>> mealsPrinter = new MealsPrinter();
+        Printer<List<Meal>> printer = new MealsPrinter();
         List<Meal> meals = new ArrayList<>(MealProvider.provide());
-        mealsPrinter.print("meal fetched by index from an ArrayList with null values - careless way",
+
+        getMealByIndex(printer, meals);
+        getIndexOfMeal(meals);
+        checkIfListContainsMeal();
+    }
+
+    private static void getMealByIndex(Printer<List<Meal>> mealsPrinter, List<Meal> meals) {
+        mealsPrinter.print("[meal fetched by index from an ArrayList with null values - careless way]",
                 Collections.singletonList(meals.get(9)));
 
-        System.out.println("meal fetched by index from an ArrayList with null values - cautious ways");
+        System.out.println("[meal fetched by index from an ArrayList with null values - cautious ways]");
         Optional.ofNullable(meals.get(10)).ifPresent(System.out::println);
         System.out.println(Optional.ofNullable(meals.get(10))
-                .orElse(Meal.healthy("empty", GlutenPresence.GLUTEN_FREE, 0)));
+                .orElse(MealProvider.provideEmptyHealthy()));
         System.out.println("\n-------------------------------------------------\n");
+    }
 
-        System.out.println(meals.contains(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400)));
-        System.out.println(meals.contains(null));
-        System.out.println("\n-------------------------------------------------\n");
-
-        System.out.println(meals.indexOf(Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400)));
+    private static void getIndexOfMeal(List<Meal> meals) {
+        System.out.println("[indexes of requested meals]");
+        System.out.println(meals.indexOf(MealProvider.provideCookie()));
         System.out.println(meals.indexOf(null));
         System.out.println(meals.lastIndexOf(null));
         System.out.println("\n-------------------------------------------------\n");
     }
 
-    private static void howToIterate() {
-        List<Meal> meals = new ArrayList<>(MealProvider.provide());
-        Printer<List<Meal>> printer = new MealsPrinter();
-        printer.print("before iteration", meals);
+    private static void checkIfListContainsMeal() {
+        List<Meal> meals = new LinkedList<>(MealProvider.provide());
+        System.out.println("[check if meals contains requested dishes]");
+        System.out.println(meals.contains(MealProvider.provideCookie()));
+        System.out.println(meals.contains(null));
+        System.out.println("\n-------------------------------------------------\n");
+    }
 
-        changeWhenIterationWithIterator(meals, printer);
-        changeNamesInFor(meals, printer);
-        modifyElementWithGivenIndexDuringIteration(meals, printer);
-        doNotCrashWhenListIsNull(meals);
-        changeNullMealsToOptionalInForeach(meals, printer);
-        filterOutNullsInStream(meals, printer);
+    private static void howToIterate() {
+        Printer<List<Meal>> printer = new MealsPrinter();
+
+        changeWhenIterationWithIterator(MealProvider.provide(), printer);
+        changeNamesInFor(MealProvider.provide(), printer);
+        modifyElementsWithSpecifiedIndexDuringIteration(MealProvider.provide(), printer);
+        modifyElementsDuringIteration(MealProvider.provide(), printer);
+        doNotCrashWhenListIsNull(null);
+        changeNullMealsToOptionalInForeach(MealProvider.provide(), printer);
+        filterOutNullsInStream(MealProvider.provide(), printer);
     }
 
     private static void changeWhenIterationWithIterator(List<Meal> meals, Printer<List<Meal>> printer) {
@@ -198,10 +206,23 @@ public class ListExamples {
         printer.print("names changed in for loop", meals);
     }
 
-    private static void modifyElementWithGivenIndexDuringIteration(List<Meal> meals, Printer<List<Meal>> printer) {
+    private static void modifyElementsWithSpecifiedIndexDuringIteration(List<Meal> meals, Printer<List<Meal>> printer) {
+        for (int i = 0; i < meals.size(); i++) {
+            if(i%2 != 0) {
+                if(meals.get(i) != null) {
+                    meals.get(i).setName("even meal");
+                }
+            }
+        }
+        printer.print("names changed in even meals", meals);
+    }
+
+    private static void modifyElementsDuringIteration(List<Meal> meals, Printer<List<Meal>> printer) {
         for (int i = 0; i < meals.size(); i++) {
             Optional.ofNullable(meals.get(i)).
-                    ifPresent(meal -> {if(meal.getKilocalories()>200) {meal.setName("high calorie value");}});
+                    ifPresent(meal -> { if(meal.getKilocalories()>200) {
+                        meal.setName("high calorie value");}
+                    });
         }
         printer.print("names changed in high calorie meals", meals);
     }
@@ -215,14 +236,14 @@ public class ListExamples {
     private static void changeNullMealsToOptionalInForeach(List<Meal> meals, Printer<List<Meal>> printer) {
         List<Meal> copy = new ArrayList<>();
         meals.forEach(m -> copy.add(Optional.ofNullable(m)
-                .orElse(Meal.healthy("empty", GlutenPresence.GLUTEN_FREE, 0))));
-        printer.print("foreach changing nullable meals to empty optionals", copy);
+                .orElse(MealProvider.provideEmptyHealthy())));
+        printer.print("foreach changing nullable meals to empty meals", copy);
     }
 
     private static void filterOutNullsInStream(List<Meal> meals, Printer<List<Meal>> printer) {
         List<Meal> mealsFromStream = meals.stream()
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
-        printer.print("meals from stream", mealsFromStream);
+        printer.print("meals without nulls from stream", mealsFromStream);
     }
 }

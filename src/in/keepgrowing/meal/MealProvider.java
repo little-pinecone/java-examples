@@ -45,4 +45,12 @@ public class MealProvider {
                 Meal.tasty("cinnamon bun", GlutenPresence.CONTAINS_GLUTEN, 450)
         );
     }
+
+    public static Meal provideCookie() {
+        return Meal.tasty("chocolate cookie", GlutenPresence.CONTAINS_GLUTEN, 400);
+    }
+
+    public static Meal provideEmptyHealthy(){
+        return Meal.healthy("empty", GlutenPresence.GLUTEN_FREE, 0);
+    }
 }
