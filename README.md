@@ -2,7 +2,7 @@
 
 [![keep growing logo](readme-images/logo_250x60.png)](https://keepgrowing.in)
 
-Code examples describing java features.
+Code examples describing java features. The project was created solely for learning purposes and to verify code described in the [posts about Java on keepgrowing.in](https://keepgrowing.in/java).
 
 ## Getting Started
 

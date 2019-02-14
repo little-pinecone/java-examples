@@ -254,6 +254,11 @@ public class ListExamples {
             iterator.next().setName("name changed during iterating with iterator");
         }
         printer.print("names changed during iterating with iterator", meals);
+
+        //safer method to iterate with Iterator
+        for(Iterator<Meal> i =meals.iterator(); i.hasNext();) {
+            Meal meal = i.next();
+        }
     }
 
     private static void failToModifyListWhenIterating() {
