@@ -15,7 +15,3 @@ $ git clone https://github.com/little-pinecone/java-examples.git
 
 * Java 11
 * IntelliJ
-
-## License
-
-This project is licensed under the MIT License - see the [license details](https://opensource.org/licenses/MIT).
