@@ -17,7 +17,7 @@ public class FibonacciNumber {
      */
     private static List<Integer> getSequence(Integer length) {
         var sequence = new LinkedList<Integer>();
-        if (length == 1) {
+        if (length <= 1) {
             return sequence;
         }
         var currentValue = 1;
